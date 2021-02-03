@@ -4,7 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "react-native";
 
-import { Projects, Tasks } from "./screens";
+import { Projects, Tasks, Task } from "./screens";
 
 declare const global: { HermesInternal: null | {} };
 
@@ -16,8 +16,9 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Main" component={Projects} />
-          <Stack.Screen name="Tasks" component={Tasks} />
+          {/* <Stack.Screen name="Projects" component={Projects} /> */}
+          {/* <Stack.Screen name="Tasks" component={Tasks} /> */}
+          <Stack.Screen name="Task" component={Task} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

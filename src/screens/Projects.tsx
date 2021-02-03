@@ -20,34 +20,52 @@ interface Values {
 
 function Projects(): React.ReactElement {
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [projects, setProjects] = useState<Values[]>([
+    { name: "project 1", hourRate: "10" },
+  ]);
 
   const navigation = useNavigation();
 
-  const handleToggleModal = useCallback(() => {
-    setIsOpenModal(!isOpenModal);
-  }, [isOpenModal]);
+  const handleCloseModal = useCallback(() => setIsOpenModal(false), []);
+  const handleOpenModal = useCallback(() => setIsOpenModal(true), []);
 
-  const handleAddClick = useCallback(() => {
-    console.log("add");
-    handleToggleModal();
-  }, []);
+  const handleSubmitForm = useCallback(
+    (values: Values) => {
+      setProjects([...projects, values]);
+      handleCloseModal();
+    },
+    [handleCloseModal, projects]
+  );
 
-  const handleSubmitForm = useCallback((values: Values) => {
-    console.log(values);
-  }, []);
+  const handleProjectClik = useCallback(
+    (id: number) => () => {
+      navigation.navigate("Tasks", {
+        id,
+      });
+    },
+    []
+  );
 
   return (
     <SafeAreaView
       style={{ height: "100%", position: "relative", backgroundColor: "#fff" }}
     >
       <ScrollView>
-        <Text>Projects screen</Text>
+        {projects.map((project, index) => (
+          <TouchableOpacity key={index} onPress={handleProjectClik(index)}>
+            <View>
+              <Text>
+                {index + 1}. {project.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
 
       <ModalView
         isOpen={isOpenModal}
         title="Add project"
-        onClose={handleToggleModal}
+        onClose={handleCloseModal}
       >
         <Formik
           initialValues={{ name: "", hourRate: "" }}
@@ -98,7 +116,7 @@ function Projects(): React.ReactElement {
           paddingBottom: 3,
           zIndex: 10,
         }}
-        onPress={handleAddClick}
+        onPress={handleOpenModal}
       >
         <Text>ADD</Text>
       </TouchableOpacity>

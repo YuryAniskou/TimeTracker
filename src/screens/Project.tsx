@@ -18,11 +18,9 @@ interface Values {
   hourRate: string;
 }
 
-function Tasks(): React.ReactElement {
+function Project(): React.ReactElement {
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [tasks, setTasks] = useState<Values[]>([
-    { name: "task 1", hourRate: "10" },
-  ]);
+  const [tasks, setTasks] = useState<Values[]>([]);
 
   const navigation = useNavigation();
 
@@ -37,9 +35,9 @@ function Tasks(): React.ReactElement {
     [handleCloseModal, tasks]
   );
 
-  const handleTaskClik = useCallback(
+  const handleProjectClik = useCallback(
     (id: number) => () => {
-      navigation.navigate("Task", {
+      navigation.navigate("Project", {
         id,
       });
     },
@@ -51,11 +49,11 @@ function Tasks(): React.ReactElement {
       style={{ height: "100%", position: "relative", backgroundColor: "#fff" }}
     >
       <ScrollView>
-        {tasks.map((task, index) => (
-          <TouchableOpacity key={index} onPress={handleTaskClik(index)}>
+        {projects.map((project, index) => (
+          <TouchableOpacity key={index} onPress={handleProjectClik(index)}>
             <View>
               <Text>
-                {index + 1}. {task.name}
+                {index + 1}. {project.name}
               </Text>
             </View>
           </TouchableOpacity>
@@ -64,7 +62,7 @@ function Tasks(): React.ReactElement {
 
       <ModalView
         isOpen={isOpenModal}
-        title="Add task"
+        title="Add project"
         onClose={handleCloseModal}
       >
         <Formik
@@ -124,4 +122,4 @@ function Tasks(): React.ReactElement {
   );
 }
 
-export default Tasks;
+export default Project;
