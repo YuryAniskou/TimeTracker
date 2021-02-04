@@ -18,6 +18,7 @@ interface Values {
 
 function Task(): React.ReactElement {
   const [duration, setDuration] = useState<number>(0);
+  const [animationID, setAnimationID] = useState<number>(0);
 
   const handleStartClick = useCallback(() => {
     const startTime = new Date().getTime();
@@ -30,10 +31,15 @@ function Task(): React.ReactElement {
       const currentTime = new Date().getTime() - new Date(startTime).getTime();
 
       setDuration(currentTime);
-      requestAnimationFrame(timerAnimation(startTime));
+      const animationID = requestAnimationFrame(timerAnimation(startTime));
+      setAnimationID(animationID);
     },
     []
   );
+
+  const handleStopClick = useCallback(() => {
+    cancelAnimationFrame(animationID);
+  }, [animationID]);
 
   const formatedTime = useMemo(() => {
     const currentTime = moment.duration(duration);
@@ -56,6 +62,25 @@ function Task(): React.ReactElement {
           <Text style={{ fontSize: 40 }}>{formatedTime}</Text>
         </View>
       </ScrollView>
+
+      <TouchableOpacity
+        style={{
+          position: "absolute",
+          left: 10,
+          bottom: 10,
+          backgroundColor: "#ccc",
+          borderRadius: 50,
+          height: 50,
+          width: 50,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingBottom: 3,
+          zIndex: 10,
+        }}
+        onPress={handleStopClick}
+      >
+        <Text>STOP</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={{
