@@ -1,64 +1,90 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import moment from "moment";
+import React, {
+  useCallback,
+  useContext,
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
 import {
   SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   TextInput,
-  View,
   Button,
 } from "react-native";
 import { Formik, Field, Form, FormikHelpers } from "formik";
 
 import { ModalView } from "../components/ModalView";
-
-interface Values {
-  name: string;
-  hourRate: string;
-}
+import ProjectDbService from "../services/db/ProjectDbService";
+import { AppContext } from "../contexts";
+import { Project } from "../models";
+import { ListItem } from "../components/ListItem";
 
 function Projects(): React.ReactElement {
+  const dbInstance = useContext(AppContext);
+
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [projects, setProjects] = useState<Values[]>([
-    { name: "project 1", hourRate: "10" },
-  ]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   const navigation = useNavigation();
 
   const handleCloseModal = useCallback(() => setIsOpenModal(false), []);
   const handleOpenModal = useCallback(() => setIsOpenModal(true), []);
 
+  const projectService = useMemo(() => {
+    if (dbInstance) return new ProjectDbService(dbInstance);
+  }, [dbInstance]);
+
   const handleSubmitForm = useCallback(
-    (values: Values) => {
-      setProjects([...projects, values]);
-      handleCloseModal();
+    (projectParams: Project) => {
+      console.log(moment().unix());
+      projectService
+        ?.createProject({
+          ...projectParams,
+          createdAt: moment().toISOString(),
+        })
+        .then((project) => {
+          setProjects([...projects, project]);
+          handleCloseModal();
+        });
     },
-    [handleCloseModal, projects]
+    [projectService, handleCloseModal, projects]
   );
 
-  const handleProjectClik = useCallback(
+  const handleProjectClick = useCallback(
     (id: number) => () => {
-      navigation.navigate("Tasks", {
-        id,
+      // navigation.navigate("Tasks", {
+      //   id,
+      // });
+      projectService?.deleteProject(id).then(() => {
+        const filteredProjects = projects.filter(
+          (project) => project.id !== id
+        );
+
+        setProjects(filteredProjects);
       });
     },
-    []
+    [projects]
   );
+
+  useEffect(() => {
+    projectService?.getProjects().then(setProjects);
+  }, [projectService]);
 
   return (
     <SafeAreaView
       style={{ height: "100%", position: "relative", backgroundColor: "#fff" }}
     >
       <ScrollView>
-        {projects.map((project, index) => (
-          <TouchableOpacity key={index} onPress={handleProjectClik(index)}>
-            <View>
-              <Text>
-                {index + 1}. {project.name}
-              </Text>
-            </View>
-          </TouchableOpacity>
+        {projects.map((project) => (
+          <ListItem
+            key={project.id}
+            label={`${project.id}. ${project.title}`}
+            onPress={handleProjectClick(project.id)}
+          />
         ))}
       </ScrollView>
 
@@ -68,7 +94,7 @@ function Projects(): React.ReactElement {
         onClose={handleCloseModal}
       >
         <Formik
-          initialValues={{ name: "", hourRate: "" }}
+          initialValues={{ title: "" } as Project}
           onSubmit={handleSubmitForm}
         >
           {({ handleChange, handleSubmit, values }) => (
@@ -80,21 +106,9 @@ function Projects(): React.ReactElement {
                   marginBottom: 10,
                   borderColor: "#ccc",
                 }}
-                onChangeText={handleChange("name")}
-                value={values.name}
+                onChangeText={handleChange("title")}
+                value={values.title}
                 placeholder="Project Name"
-              />
-              <TextInput
-                style={{
-                  borderBottomWidth: 1,
-                  padding: 0,
-                  marginBottom: 10,
-                  borderColor: "#ccc",
-                }}
-                onChangeText={handleChange("hourRate")}
-                keyboardType="number-pad"
-                value={values.hourRate}
-                placeholder="Hour Rate"
               />
               <Button onPress={handleSubmit} title="Submit" />
             </>
