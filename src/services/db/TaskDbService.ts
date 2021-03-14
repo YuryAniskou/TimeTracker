@@ -1,11 +1,11 @@
 import SQLite from "react-native-sqlite-storage";
-import { Project } from "../../models";
+import { Task } from "../../models";
 import DBService, { ServiceDbInterface } from "./DBService";
 
-class ProjectDbService
-  extends DBService<Project>
-  implements ServiceDbInterface<Project> {
-  private tableName: string = "projects";
+class TaskDbService
+  extends DBService<Task>
+  implements ServiceDbInterface<Task> {
+  private tableName: string = "tasks";
 
   constructor(dbInstance: SQLite.SQLiteDatabase) {
     super(dbInstance);
@@ -18,15 +18,23 @@ class ProjectDbService
     return item;
   }
 
-  async getList(options?: { count?: number; offset?: number }) {
-    const { offset = 0, count = 10 } = options || {};
+  async getList(options?: {
+    count?: number;
+    offset?: number;
+    projectId?: number;
+  }) {
+    const { offset = 0, count = 10, projectId } = options || {};
 
     let query = `SELECT * FROM ${this.tableName} LIMIT ${offset},${count}`;
+
+    if (projectId) {
+      query = `SELECT * FROM ${this.tableName} WHERE projectId = ${projectId} LIMIT ${offset},${count}`;
+    }
 
     return await this.executeSql(query);
   }
 
-  async createItem(params: Project) {
+  async createItem(params: Task) {
     const paramNames = ["title", "createdAt"];
     const paramValues = [params.title, params.createdAt];
 
@@ -49,7 +57,7 @@ class ProjectDbService
     return item;
   }
 
-  async updateItem(id: number, params: Project) {
+  async updateItem(id: number, params: Task) {
     const paramSets = [`title = ${params.title}`];
     const selectQuery = `SELECT * FROM ${this.tableName} WHERE id = ${id}`;
 
@@ -63,4 +71,4 @@ class ProjectDbService
   }
 }
 
-export default ProjectDbService;
+export default TaskDbService;

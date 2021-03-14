@@ -1,44 +1,66 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   TextInput,
-  View,
   Button,
 } from "react-native";
-import { Formik, Field, Form, FormikHelpers } from "formik";
+import moment from "moment";
+import { Formik } from "formik";
 
 import { ModalView } from "../components/ModalView";
+import { ListItem } from "../components/ListItem";
+import { AppContext } from "../contexts";
+import TaskDbService from "../services/db/TaskDbService";
+import { Task } from "../models";
+import { RootStackParamList } from "../App";
 
-interface Values {
-  name: string;
-  hourRate: string;
-}
+type TasksScreenRouteProp = RouteProp<RootStackParamList, "Tasks">;
 
 function Tasks(): React.ReactElement {
+  const dbInstance = useContext(AppContext);
+
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [tasks, setTasks] = useState<Values[]>([
-    { name: "task 1", hourRate: "10" },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   const navigation = useNavigation();
+  const route = useRoute<TasksScreenRouteProp>();
+
+  const taskService = useMemo(() => {
+    if (dbInstance) return new TaskDbService(dbInstance);
+  }, [dbInstance]);
 
   const handleCloseModal = useCallback(() => setIsOpenModal(false), []);
   const handleOpenModal = useCallback(() => setIsOpenModal(true), []);
 
   const handleSubmitForm = useCallback(
-    (values: Values) => {
-      setTasks([...tasks, values]);
-      handleCloseModal();
+    (params: Task) => {
+      taskService
+        ?.createItem({
+          ...params,
+          projectId: route.params?.projectId,
+          createdAt: moment().toISOString(),
+        })
+        .then((task) => {
+          setTasks([...tasks, task]);
+          handleCloseModal();
+        });
     },
-    [handleCloseModal, tasks]
+    [taskService, handleCloseModal, tasks]
   );
 
-  const handleTaskClik = useCallback(
+  const handleTaskClick = useCallback(
     (id: number) => () => {
+      console.log("sssss", id);
       navigation.navigate("Task", {
         id,
       });
@@ -46,19 +68,33 @@ function Tasks(): React.ReactElement {
     []
   );
 
+  const handleTaskRemoveClick = useCallback(
+    (id: number) => () => {
+      taskService?.deleteItem(id).then(() => {
+        const filteredItems = tasks.filter((task) => task.id !== id);
+
+        setTasks(filteredItems);
+      });
+    },
+    [tasks, taskService]
+  );
+
+  useEffect(() => {
+    taskService?.getList({}).then(setTasks);
+  }, [taskService]);
+
   return (
     <SafeAreaView
       style={{ height: "100%", position: "relative", backgroundColor: "#fff" }}
     >
       <ScrollView>
         {tasks.map((task, index) => (
-          <TouchableOpacity key={index} onPress={handleTaskClik(index)}>
-            <View>
-              <Text>
-                {index + 1}. {task.name}
-              </Text>
-            </View>
-          </TouchableOpacity>
+          <ListItem
+            key={task.id}
+            label={`${index + 1}. ${task.title}`}
+            onPress={handleTaskClick(task.id)}
+            onRemove={handleTaskRemoveClick(task.id)}
+          />
         ))}
       </ScrollView>
 
@@ -68,7 +104,7 @@ function Tasks(): React.ReactElement {
         onClose={handleCloseModal}
       >
         <Formik
-          initialValues={{ name: "", hourRate: "" }}
+          initialValues={{ title: "" } as Task}
           onSubmit={handleSubmitForm}
         >
           {({ handleChange, handleSubmit, values }) => (
@@ -80,21 +116,9 @@ function Tasks(): React.ReactElement {
                   marginBottom: 10,
                   borderColor: "#ccc",
                 }}
-                onChangeText={handleChange("name")}
-                value={values.name}
-                placeholder="Project Name"
-              />
-              <TextInput
-                style={{
-                  borderBottomWidth: 1,
-                  padding: 0,
-                  marginBottom: 10,
-                  borderColor: "#ccc",
-                }}
-                onChangeText={handleChange("hourRate")}
-                keyboardType="number-pad"
-                value={values.hourRate}
-                placeholder="Hour Rate"
+                onChangeText={handleChange("title")}
+                value={values.title}
+                placeholder="Task Name"
               />
               <Button onPress={handleSubmit} title="Submit" />
             </>

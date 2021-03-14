@@ -1,5 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
-import moment from "moment";
 import React, {
   useCallback,
   useContext,
@@ -15,6 +13,8 @@ import {
   TextInput,
   Button,
 } from "react-native";
+import moment from "moment";
+import { useNavigation } from "@react-navigation/native";
 import { Formik, Field, Form, FormikHelpers } from "formik";
 
 import { ModalView } from "../components/ModalView";
@@ -42,7 +42,7 @@ function Projects(): React.ReactElement {
     (projectParams: Project) => {
       console.log(moment().unix());
       projectService
-        ?.createProject({
+        ?.createItem({
           ...projectParams,
           createdAt: moment().toISOString(),
         })
@@ -56,10 +56,16 @@ function Projects(): React.ReactElement {
 
   const handleProjectClick = useCallback(
     (id: number) => () => {
-      // navigation.navigate("Tasks", {
-      //   id,
-      // });
-      projectService?.deleteProject(id).then(() => {
+      navigation.navigate("Tasks", {
+        projectId: id,
+      });
+    },
+    []
+  );
+
+  const handleProjectRemoveClick = useCallback(
+    (id: number) => () => {
+      projectService?.deleteItem(id).then(() => {
         const filteredProjects = projects.filter(
           (project) => project.id !== id
         );
@@ -67,23 +73,24 @@ function Projects(): React.ReactElement {
         setProjects(filteredProjects);
       });
     },
-    [projects]
+    [projects, projectService]
   );
 
   useEffect(() => {
-    projectService?.getProjects().then(setProjects);
+    projectService?.getList().then(setProjects);
   }, [projectService]);
 
   return (
     <SafeAreaView
       style={{ height: "100%", position: "relative", backgroundColor: "#fff" }}
     >
-      <ScrollView>
+      <ScrollView style={{ padding: 10 }}>
         {projects.map((project) => (
           <ListItem
             key={project.id}
             label={`${project.id}. ${project.title}`}
             onPress={handleProjectClick(project.id)}
+            onRemove={handleProjectRemoveClick(project.id)}
           />
         ))}
       </ScrollView>

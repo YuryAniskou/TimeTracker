@@ -9,7 +9,13 @@ import { Projects, Tasks, Task } from "./screens";
 
 declare const global: { HermesInternal: null | {} };
 
-const Stack = createStackNavigator();
+export type RootStackParamList = {
+  Projects: undefined;
+  Tasks?: { projectId?: number };
+  Task?: { projectId?: number; taskId?: number };
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 const App = () => {
   return (
