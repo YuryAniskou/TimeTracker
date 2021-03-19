@@ -5,13 +5,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "react-native";
 
 import { AppContextProvider } from "./contexts";
-import { Projects, Tasks, Task } from "./screens";
+import { ProjectsScreen, ProjectScreen, TaskScreen } from "./screens";
 
 declare const global: { HermesInternal: null | {} };
 
 export type RootStackParamList = {
   Projects: undefined;
-  Tasks?: { projectId?: number };
+  Project?: { projectId?: number };
   Task?: { projectId?: number; taskId?: number };
 };
 
@@ -23,9 +23,9 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Projects" component={Projects} />
-          <Stack.Screen name="Tasks" component={Tasks} />
-          <Stack.Screen name="Task" component={Task} />
+          <Stack.Screen name="Projects" component={ProjectsScreen} />
+          <Stack.Screen name="Project" component={ProjectScreen} />
+          <Stack.Screen name="Task" component={TaskScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppContextProvider>

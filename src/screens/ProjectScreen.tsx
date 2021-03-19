@@ -24,9 +24,9 @@ import TaskDbService from "../services/db/TaskDbService";
 import { Task } from "../models";
 import { RootStackParamList } from "../App";
 
-type TasksScreenRouteProp = RouteProp<RootStackParamList, "Tasks">;
+type TasksScreenRouteProp = RouteProp<RootStackParamList, "Project">;
 
-function Tasks(): React.ReactElement {
+function ProjectScreen(): React.ReactElement {
   const dbInstance = useContext(AppContext);
 
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -148,4 +148,4 @@ function Tasks(): React.ReactElement {
   );
 }
 
-export default Tasks;
+export default ProjectScreen;

@@ -1,3 +1,3 @@
-export { default as Projects } from "./Projects";
-export { default as Tasks } from "./Tasks";
-export { default as Task } from "./Task";
+export { default as ProjectsScreen } from "./ProjectsScreen";
+export { default as ProjectScreen } from "./ProjectScreen";
+export { default as TaskScreen } from "./TaskScreen";

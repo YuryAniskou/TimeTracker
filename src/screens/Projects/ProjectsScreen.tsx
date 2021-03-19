@@ -5,23 +5,22 @@ import React, {
   useMemo,
   useEffect,
 } from "react";
-import {
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Button,
-} from "react-native";
+import { SafeAreaView, ScrollView, TextInput, Button } from "react-native";
 import moment from "moment";
 import { useNavigation } from "@react-navigation/native";
-import { Formik, Field, Form, FormikHelpers } from "formik";
+import { Formik } from "formik";
 
-import { ModalView } from "../components/ModalView";
-import ProjectDbService from "../services/db/ProjectDbService";
-import { AppContext } from "../contexts";
-import { Project } from "../models";
-import { ListItem } from "../components/ListItem";
+import { ModalView } from "../../components/ModalView";
+import ProjectDbService from "../../services/db/ProjectDbService";
+import { AppContext } from "../../contexts";
+import { Project } from "../../models";
+import { ListItem } from "../../components/ListItem";
+import ActionButtons from "../../components/ActionButtons";
+import { Timer } from "../../components/Timer";
+import { Field } from "../../components/Form";
+
+import styles from "../ScreenStyles";
+import ProjectForm from "./ProjectModal";
 
 function Projects(): React.ReactElement {
   const dbInstance = useContext(AppContext);
@@ -38,7 +37,7 @@ function Projects(): React.ReactElement {
     if (dbInstance) return new ProjectDbService(dbInstance);
   }, [dbInstance]);
 
-  const handleSubmitForm = useCallback(
+  const handleSubmit = useCallback(
     (projectParams: Project) => {
       console.log(moment().unix());
       projectService
@@ -56,7 +55,7 @@ function Projects(): React.ReactElement {
 
   const handleProjectClick = useCallback(
     (id: number) => () => {
-      navigation.navigate("Tasks", {
+      navigation.navigate("Project", {
         projectId: id,
       });
     },
@@ -81,10 +80,10 @@ function Projects(): React.ReactElement {
   }, [projectService]);
 
   return (
-    <SafeAreaView
-      style={{ height: "100%", position: "relative", backgroundColor: "#fff" }}
-    >
-      <ScrollView style={{ padding: 10 }}>
+    <SafeAreaView style={styles.container}>
+      <Timer />
+
+      <ScrollView style={styles.list}>
         {projects.map((project) => (
           <ListItem
             key={project.id}
@@ -95,52 +94,13 @@ function Projects(): React.ReactElement {
         ))}
       </ScrollView>
 
-      <ModalView
-        isOpen={isOpenModal}
-        title="Add project"
+      <ProjectForm
+        isOpenModal={isOpenModal}
+        onSubmit={handleSubmit}
         onClose={handleCloseModal}
-      >
-        <Formik
-          initialValues={{ title: "" } as Project}
-          onSubmit={handleSubmitForm}
-        >
-          {({ handleChange, handleSubmit, values }) => (
-            <>
-              <TextInput
-                style={{
-                  borderBottomWidth: 1,
-                  padding: 0,
-                  marginBottom: 10,
-                  borderColor: "#ccc",
-                }}
-                onChangeText={handleChange("title")}
-                value={values.title}
-                placeholder="Project Name"
-              />
-              <Button onPress={handleSubmit} title="Submit" />
-            </>
-          )}
-        </Formik>
-      </ModalView>
+      />
 
-      <TouchableOpacity
-        style={{
-          position: "absolute",
-          right: 10,
-          bottom: 10,
-          backgroundColor: "#ccc",
-          borderRadius: 50,
-          height: 50,
-          width: 50,
-          alignItems: "center",
-          justifyContent: "center",
-          paddingBottom: 3,
-          zIndex: 10,
-        }}
-        onPress={handleOpenModal}
-      >
-        <Text>ADD</Text>
-      </TouchableOpacity>
+      <ActionButtons onPress={handleOpenModal} />
     </SafeAreaView>
   );
 }
