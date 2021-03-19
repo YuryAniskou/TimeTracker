@@ -3,21 +3,24 @@ import { Text, TouchableOpacity, View } from "react-native";
 import TimeView from "./TimeView";
 
 import styles from "./TimerStyles";
+import TimerActions from "./TimerActions";
 
 interface Timer {
+  enabled?: boolean;
   startDuration?: number;
   isStartedDefault?: boolean;
   onStop?: (duration: number) => void;
 }
 
 function Timer({
+  enabled,
   startDuration = 0,
   isStartedDefault,
   onStop,
 }: Timer): React.ReactElement {
   const [duration, setDuration] = useState(startDuration);
   const [animationID, setAnimationID] = useState(0);
-  const [isStarted, setIsStarted] = useState(isStartedDefault);
+  const [isStarted, setIsStarted] = useState(!!isStartedDefault);
 
   const timerAnimation = useCallback(
     (startTime) => () => {
@@ -45,19 +48,15 @@ function Timer({
   }, [animationID, duration, onStop]);
 
   return (
-    <View>
+    <View style={styles.container}>
       <TimeView duration={duration} />
 
-      {isStarted && (
-        <TouchableOpacity style={styles.acttionBtn} onPress={handleStopClick}>
-          <Text>STOP</Text>
-        </TouchableOpacity>
-      )}
-
-      {!isStarted && (
-        <TouchableOpacity style={styles.acttionBtn} onPress={handleStartClick}>
-          <Text>START</Text>
-        </TouchableOpacity>
+      {enabled && (
+        <TimerActions
+          isStarted={isStarted}
+          onStart={handleStartClick}
+          onStop={handleStopClick}
+        />
       )}
     </View>
   );

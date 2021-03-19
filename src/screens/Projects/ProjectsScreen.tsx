@@ -5,7 +5,14 @@ import React, {
   useMemo,
   useEffect,
 } from "react";
-import { SafeAreaView, ScrollView, TextInput, Button } from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  TextInput,
+  Button,
+  View,
+  Text,
+} from "react-native";
 import moment from "moment";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
@@ -25,6 +32,7 @@ import ProjectForm from "./ProjectModal";
 function Projects(): React.ReactElement {
   const dbInstance = useContext(AppContext);
 
+  const [activeProject, setActiveProject] = useState<number | null>(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -39,27 +47,25 @@ function Projects(): React.ReactElement {
 
   const handleSubmit = useCallback(
     (projectParams: Project) => {
-      console.log(moment().unix());
-      projectService
-        ?.createItem({
-          ...projectParams,
-          createdAt: moment().toISOString(),
-        })
-        .then((project) => {
-          setProjects([...projects, project]);
-          handleCloseModal();
-        });
+      projectService?.createItem(projectParams).then((project) => {
+        setProjects([...projects, project]);
+        handleCloseModal();
+      });
     },
     [projectService, handleCloseModal, projects]
   );
 
   const handleProjectClick = useCallback(
     (id: number) => () => {
-      navigation.navigate("Project", {
-        projectId: id,
-      });
+      const toActive = activeProject === id ? null : id;
+
+      setActiveProject(toActive);
+
+      // navigation.navigate("Project", {
+      //   projectId: id,
+      // });
     },
-    []
+    [activeProject]
   );
 
   const handleProjectRemoveClick = useCallback(
@@ -81,15 +87,15 @@ function Projects(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Timer />
+      <Timer enabled={!!activeProject} />
 
       <ScrollView style={styles.list}>
         {projects.map((project) => (
           <ListItem
             key={project.id}
+            isActive={project.id === activeProject}
             label={`${project.id}. ${project.title}`}
             onPress={handleProjectClick(project.id)}
-            onRemove={handleProjectRemoveClick(project.id)}
           />
         ))}
       </ScrollView>

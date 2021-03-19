@@ -34,6 +34,11 @@ function ProjectForm({
               value={values.title}
               placeholder="Project Name"
             />
+            <Field
+              onChangeText={handleChange("hourRate")}
+              value={values.hourRate}
+              placeholder="Hour Rate"
+            />
             <Button onPress={handleSubmit} title="Submit" />
           </>
         )}
